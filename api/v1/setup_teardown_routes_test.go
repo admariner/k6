@@ -40,9 +40,11 @@ import (
 	"go.k6.io/k6/core/local"
 	"go.k6.io/k6/js"
 	"go.k6.io/k6/lib"
+	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/lib/testutils"
 	"go.k6.io/k6/lib/types"
 	"go.k6.io/k6/loader"
+	"go.k6.io/k6/stats"
 )
 
 func TestSetupData(t *testing.T) {
@@ -159,6 +161,11 @@ func TestSetupData(t *testing.T) {
 			require.NoError(t, err)
 
 			globalCtx, globalCancel := context.WithCancel(context.Background())
+			r := stats.NewRegistry(nil)
+			b := metrics.RegisterBuiltinMetrics(r)
+			globalCtx = metrics.WithBuiltinMetrics(globalCtx, b)
+			globalCtx = stats.WithRegistry(globalCtx, r)
+
 			runCtx, runCancel := context.WithCancel(globalCtx)
 			run, wait, err := engine.Init(globalCtx, runCtx)
 			defer wait()

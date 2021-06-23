@@ -184,13 +184,17 @@ func TestResponseStatus(t *testing.T) {
 				defer server.Close()
 				logger := logrus.New()
 				logger.Level = logrus.DebugLevel
+				samples := make(chan<- stats.SampleContainer, 1)
 				state := &lib.State{
 					Options:   lib.Options{RunTags: &stats.SampleTags{}},
 					Transport: server.Client().Transport,
 					Logger:    logger,
-					Samples:   make(chan<- stats.SampleContainer, 1),
+					Samples:   samples,
 				}
-				ctx := lib.WithState(context.Background(), state)
+				registry := stats.NewRegistry(samples)
+				ctx := metrics.WithBuiltinMetrics(context.Background(), metrics.RegisterBuiltinMetrics(registry))
+				ctx = stats.WithRegistry(ctx, registry)
+				ctx = lib.WithState(ctx, state)
 				req, err := http.NewRequest("GET", server.URL, nil)
 				require.NoError(t, err)
 
@@ -268,6 +272,9 @@ func TestMakeRequestTimeoutInTheMiddle(t *testing.T) {
 		Logger:    logger,
 		BPool:     bpool.NewBufferPool(100),
 	}
+	registry := stats.NewRegistry(samples)
+	ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
+	ctx = stats.WithRegistry(ctx, registry)
 	ctx = lib.WithState(ctx, state)
 	req, _ := http.NewRequest("GET", srv.URL, nil)
 	preq := &ParsedHTTPRequest{
@@ -343,6 +350,9 @@ func TestTrailFailed(t *testing.T) {
 				Logger:    logger,
 				BPool:     bpool.NewBufferPool(2),
 			}
+			registry := stats.NewRegistry(samples)
+			ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
+			ctx = stats.WithRegistry(ctx, registry)
 			ctx = lib.WithState(ctx, state)
 			req, _ := http.NewRequest("GET", srv.URL, nil)
 			preq := &ParsedHTTPRequest{
@@ -363,7 +373,7 @@ func TestTrailFailed(t *testing.T) {
 
 			var httpReqFailedSampleValue null.Bool
 			for _, s := range sample.GetSamples() {
-				if s.Metric.Name == metrics.HTTPReqFailed.Name {
+				if s.Metric.Name == metrics.HTTPReqFailedName {
 					httpReqFailedSampleValue.Valid = true
 					if s.Value == 1.0 {
 						httpReqFailedSampleValue.Bool = true
@@ -408,6 +418,9 @@ func TestMakeRequestDialTimeout(t *testing.T) {
 		BPool:   bpool.NewBufferPool(100),
 	}
 
+	registry := stats.NewRegistry(samples)
+	ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
+	ctx = stats.WithRegistry(ctx, registry)
 	ctx = lib.WithState(ctx, state)
 	req, _ := http.NewRequest("GET", "http://"+addr.String(), nil)
 	preq := &ParsedHTTPRequest{
@@ -460,6 +473,9 @@ func TestMakeRequestTimeoutInTheBegining(t *testing.T) {
 		Logger:    logger,
 		BPool:     bpool.NewBufferPool(100),
 	}
+	registry := stats.NewRegistry(samples)
+	ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
+	ctx = stats.WithRegistry(ctx, registry)
 	ctx = lib.WithState(ctx, state)
 	req, _ := http.NewRequest("GET", srv.URL, nil)
 	preq := &ParsedHTTPRequest{

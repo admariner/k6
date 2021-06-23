@@ -60,7 +60,7 @@ const (
 	DataReceivedName = "data_received"
 )
 
-type BuiltInMetrics struct {
+type BuiltinMetrics struct {
 	VUs               *stats.Metric
 	VUsMax            *stats.Metric
 	Iterations        *stats.Metric
@@ -99,8 +99,8 @@ type BuiltInMetrics struct {
 	DataReceived *stats.Metric
 }
 
-func RegisterBuiltinMetrics(registry *stats.Registry) *BuiltInMetrics {
-	return &BuiltInMetrics{
+func RegisterBuiltinMetrics(registry *stats.Registry) *BuiltinMetrics {
+	return &BuiltinMetrics{
 		VUs:               registry.MustNewMetric(VUsName, stats.Gauge),
 		VUsMax:            registry.MustNewMetric(VUsMaxName, stats.Gauge),
 		Iterations:        registry.MustNewMetric(IterationsName, stats.Counter),
@@ -135,13 +135,13 @@ func RegisterBuiltinMetrics(registry *stats.Registry) *BuiltInMetrics {
 	}
 }
 
-func WithBuiltinMetrics(ctx context.Context, b *BuiltInMetrics) context.Context {
+func WithBuiltinMetrics(ctx context.Context, b *BuiltinMetrics) context.Context {
 	return context.WithValue(ctx, builtinMetricsKey, b)
 }
 
-func GetBuiltInMetrics(ctx context.Context) *BuiltInMetrics {
+func GetBuiltInMetrics(ctx context.Context) *BuiltinMetrics {
 	if v := ctx.Value(builtinMetricsKey); v != nil {
-		return v.(*BuiltInMetrics)
+		return v.(*BuiltinMetrics)
 	}
 	return nil
 }

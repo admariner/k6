@@ -155,7 +155,7 @@ func TestGroup(t *testing.T) {
 }
 
 func checkTestRuntime(t testing.TB, ctxs ...*context.Context) (
-	*goja.Runtime, chan stats.SampleContainer, *metrics.BuiltInMetrics,
+	*goja.Runtime, chan stats.SampleContainer, *metrics.BuiltinMetrics,
 ) {
 	rt := goja.New()
 

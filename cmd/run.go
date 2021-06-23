@@ -460,7 +460,7 @@ func StartOutputs(
 	logger logrus.FieldLogger,
 	outputs []output.Output,
 	engine *core.Engine,
-	builtinMetrics *metrics.BuiltInMetrics,
+	builtinMetrics *metrics.BuiltinMetrics,
 ) error {
 	logger.Debugf("Starting %d outputs...", len(outputs))
 	for i, out := range outputs {

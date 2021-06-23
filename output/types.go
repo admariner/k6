@@ -100,5 +100,5 @@ type WithRunStatusUpdates interface {
 // WithBuiltinMetrics means the output can receive the builtin metrics.
 type WithBuiltinMetrics interface {
 	Output
-	SetBuiltinMetrics(builtInMetrics *metrics.BuiltInMetrics)
+	SetBuiltinMetrics(builtInMetrics *metrics.BuiltinMetrics)
 }

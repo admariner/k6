@@ -67,7 +67,7 @@ type Engine struct {
 	Metrics     map[string]*stats.Metric
 	MetricsLock sync.Mutex
 
-	builtInMetrics *metrics.BuiltInMetrics
+	builtInMetrics *metrics.BuiltinMetrics
 	Samples        chan stats.SampleContainer
 
 	// Assigned to metrics upon first received sample.
