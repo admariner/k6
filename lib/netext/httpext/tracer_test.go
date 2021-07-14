@@ -131,7 +131,7 @@ func TestTracer(t *testing.T) {
 		}
 		prev = val
 	}
-	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry(nil))
+	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
 
 	for tnum, isReuse := range []bool{false, true, true} {
 		t.Run(fmt.Sprintf("Test #%d", tnum), func(t *testing.T) {
@@ -247,7 +247,7 @@ func TestTracerNegativeHttpSendingValues(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, res.Body.Close())
 		trail := tracer.Done()
-		builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry(nil))
+		builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
 		trail.SaveSamples(builtinMetrics, nil)
 
 		require.True(t, trail.Sending > 0)

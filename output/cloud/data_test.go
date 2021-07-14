@@ -39,7 +39,7 @@ import (
 func TestSampleMarshaling(t *testing.T) {
 	t.Parallel()
 
-	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry(nil))
+	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
 	now := time.Now()
 	exptoMicroSecond := now.UnixNano() / 1000
 

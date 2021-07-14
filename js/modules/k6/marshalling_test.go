@@ -117,11 +117,15 @@ func TestSetupDataMarshalling(t *testing.T) {
 		}
 	`))
 
+	registry := stats.NewRegistry()
+	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(
 		testutils.NewLogger(t),
 		&loader.SourceData{URL: &url.URL{Path: "/script.js"}, Data: script},
 		nil,
 		lib.RuntimeOptions{},
+		builtinMetrics,
+		registry,
 	)
 
 	require.NoError(t, err)
@@ -136,9 +140,6 @@ func TestSetupDataMarshalling(t *testing.T) {
 	samples := make(chan<- stats.SampleContainer, 100)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	registry := stats.NewRegistry(samples)
-	ctx = stats.WithRegistry(ctx, registry)
-	ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
 	defer cancel()
 	if !assert.NoError(t, runner.Setup(ctx, samples)) {
 		return

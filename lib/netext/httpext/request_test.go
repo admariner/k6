@@ -185,16 +185,15 @@ func TestResponseStatus(t *testing.T) {
 				logger := logrus.New()
 				logger.Level = logrus.DebugLevel
 				samples := make(chan<- stats.SampleContainer, 1)
+				registry := stats.NewRegistry()
 				state := &lib.State{
-					Options:   lib.Options{RunTags: &stats.SampleTags{}},
-					Transport: server.Client().Transport,
-					Logger:    logger,
-					Samples:   samples,
+					Options:        lib.Options{RunTags: &stats.SampleTags{}},
+					Transport:      server.Client().Transport,
+					Logger:         logger,
+					Samples:        samples,
+					BuiltinMetrics: metrics.RegisterBuiltinMetrics(registry),
 				}
-				registry := stats.NewRegistry(samples)
-				ctx := metrics.WithBuiltinMetrics(context.Background(), metrics.RegisterBuiltinMetrics(registry))
-				ctx = stats.WithRegistry(ctx, registry)
-				ctx = lib.WithState(ctx, state)
+				ctx := lib.WithState(context.Background(), state)
 				req, err := http.NewRequest("GET", server.URL, nil)
 				require.NoError(t, err)
 
@@ -262,19 +261,18 @@ func TestMakeRequestTimeoutInTheMiddle(t *testing.T) {
 	samples := make(chan stats.SampleContainer, 10)
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel
+	registry := stats.NewRegistry()
 	state := &lib.State{
 		Options: lib.Options{
 			RunTags:    &stats.SampleTags{},
 			SystemTags: &stats.DefaultSystemTagSet,
 		},
-		Transport: srv.Client().Transport,
-		Samples:   samples,
-		Logger:    logger,
-		BPool:     bpool.NewBufferPool(100),
+		Transport:      srv.Client().Transport,
+		Samples:        samples,
+		Logger:         logger,
+		BPool:          bpool.NewBufferPool(100),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(registry),
 	}
-	registry := stats.NewRegistry(samples)
-	ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
-	ctx = stats.WithRegistry(ctx, registry)
 	ctx = lib.WithState(ctx, state)
 	req, _ := http.NewRequest("GET", srv.URL, nil)
 	preq := &ParsedHTTPRequest{
@@ -340,19 +338,18 @@ func TestTrailFailed(t *testing.T) {
 			samples := make(chan stats.SampleContainer, 10)
 			logger := logrus.New()
 			logger.Level = logrus.DebugLevel
+			registry := stats.NewRegistry()
 			state := &lib.State{
 				Options: lib.Options{
 					RunTags:    &stats.SampleTags{},
 					SystemTags: &stats.DefaultSystemTagSet,
 				},
-				Transport: srv.Client().Transport,
-				Samples:   samples,
-				Logger:    logger,
-				BPool:     bpool.NewBufferPool(2),
+				Transport:      srv.Client().Transport,
+				Samples:        samples,
+				Logger:         logger,
+				BPool:          bpool.NewBufferPool(2),
+				BuiltinMetrics: metrics.RegisterBuiltinMetrics(registry),
 			}
-			registry := stats.NewRegistry(samples)
-			ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
-			ctx = stats.WithRegistry(ctx, registry)
 			ctx = lib.WithState(ctx, state)
 			req, _ := http.NewRequest("GET", srv.URL, nil)
 			preq := &ParsedHTTPRequest{
@@ -403,6 +400,7 @@ func TestMakeRequestDialTimeout(t *testing.T) {
 	samples := make(chan stats.SampleContainer, 10)
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel
+	registry := stats.NewRegistry()
 	state := &lib.State{
 		Options: lib.Options{
 			RunTags:    &stats.SampleTags{},
@@ -413,14 +411,12 @@ func TestMakeRequestDialTimeout(t *testing.T) {
 				Timeout: 1 * time.Microsecond,
 			}).DialContext,
 		},
-		Samples: samples,
-		Logger:  logger,
-		BPool:   bpool.NewBufferPool(100),
+		Samples:        samples,
+		Logger:         logger,
+		BPool:          bpool.NewBufferPool(100),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(registry),
 	}
 
-	registry := stats.NewRegistry(samples)
-	ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
-	ctx = stats.WithRegistry(ctx, registry)
 	ctx = lib.WithState(ctx, state)
 	req, _ := http.NewRequest("GET", "http://"+addr.String(), nil)
 	preq := &ParsedHTTPRequest{
@@ -463,19 +459,18 @@ func TestMakeRequestTimeoutInTheBegining(t *testing.T) {
 	samples := make(chan stats.SampleContainer, 10)
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel
+	registry := stats.NewRegistry()
 	state := &lib.State{
 		Options: lib.Options{
 			RunTags:    &stats.SampleTags{},
 			SystemTags: &stats.DefaultSystemTagSet,
 		},
-		Transport: srv.Client().Transport,
-		Samples:   samples,
-		Logger:    logger,
-		BPool:     bpool.NewBufferPool(100),
+		Transport:      srv.Client().Transport,
+		Samples:        samples,
+		Logger:         logger,
+		BPool:          bpool.NewBufferPool(100),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(registry),
 	}
-	registry := stats.NewRegistry(samples)
-	ctx = metrics.WithBuiltinMetrics(ctx, metrics.RegisterBuiltinMetrics(registry))
-	ctx = stats.WithRegistry(ctx, registry)
 	ctx = lib.WithState(ctx, state)
 	req, _ := http.NewRequest("GET", srv.URL, nil)
 	preq := &ParsedHTTPRequest{
