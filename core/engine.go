@@ -67,7 +67,7 @@ type Engine struct {
 	Metrics     map[string]*stats.Metric
 	MetricsLock sync.Mutex
 
-	builtInMetrics *metrics.BuiltinMetrics
+	builtinMetrics *metrics.BuiltinMetrics
 	Samples        chan stats.SampleContainer
 
 	// Assigned to metrics upon first received sample.
@@ -81,6 +81,7 @@ type Engine struct {
 // NewEngine instantiates a new Engine, without doing any heavy initialization.
 func NewEngine(
 	ex lib.ExecutionScheduler, opts lib.Options, rtOpts lib.RuntimeOptions, outputs []output.Output, logger *logrus.Logger,
+	builtinMetrics *metrics.BuiltinMetrics,
 ) (*Engine, error) {
 	if ex == nil {
 		return nil, errors.New("missing ExecutionScheduler instance")
@@ -97,6 +98,7 @@ func NewEngine(
 		Samples:        make(chan stats.SampleContainer, opts.MetricSamplesBufferSize.Int64),
 		stopChan:       make(chan struct{}),
 		logger:         logger.WithField("component", "engine"),
+		builtinMetrics: builtinMetrics,
 	}
 
 	e.thresholds = opts.Thresholds
@@ -149,7 +151,7 @@ func (e *Engine) StartOutputs() error {
 		}
 
 		if builtinMetricOut, ok := out.(output.WithBuiltinMetrics); ok {
-			builtinMetricOut.SetBuiltinMetrics(e.builtInMetrics)
+			builtinMetricOut.SetBuiltinMetrics(e.builtinMetrics)
 		}
 
 		if err := out.Start(); err != nil {
@@ -189,7 +191,6 @@ func (e *Engine) stopOutputs(upToID int) {
 //    returned by cancelling the globalCtx
 //  - The second returned lambda can be used to wait for that process to finish.
 func (e *Engine) Init(globalCtx, runCtx context.Context) (run func() error, wait func(), err error) {
-	e.builtInMetrics = metrics.GetBuiltInMetrics(globalCtx)
 	e.logger.Debug("Initialization starting...")
 	// TODO: if we ever need metrics processing in the init context, we can move
 	// this below the other components... or even start them concurrently?
@@ -204,7 +205,7 @@ func (e *Engine) Init(globalCtx, runCtx context.Context) (run func() error, wait
 	processMetricsAfterRun := make(chan struct{})
 	runFn := func() error {
 		e.logger.Debug("Execution scheduler starting...")
-		err := e.ExecutionScheduler.Run(globalCtx, runSubCtx, e.Samples)
+		err := e.ExecutionScheduler.Run(globalCtx, runSubCtx, e.Samples, e.builtinMetrics)
 		e.logger.WithError(err).Debug("Execution scheduler terminated")
 
 		select {
@@ -422,12 +423,12 @@ func (e *Engine) emitMetrics() {
 		Samples: []stats.Sample{
 			{
 				Time:   t,
-				Metric: e.builtInMetrics.VUs,
+				Metric: e.builtinMetrics.VUs,
 				Value:  float64(executionState.GetCurrentlyActiveVUsCount()),
 				Tags:   e.Options.RunTags,
 			}, {
 				Time:   t,
-				Metric: e.builtInMetrics.VUsMax,
+				Metric: e.builtinMetrics.VUsMax,
 				Value:  float64(executionState.GetInitializedVUsCount()),
 				Tags:   e.Options.RunTags,
 			},

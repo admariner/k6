@@ -30,7 +30,6 @@ import (
 	"sync"
 
 	"go.k6.io/k6/lib"
-	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/lib/netext"
 	"go.k6.io/k6/stats"
 )
@@ -186,7 +185,7 @@ func (t *transport) measureAndEmitMetrics(unfReq *unfinishedRequest) *finishedRe
 	}
 
 	finalTags := stats.IntoSampleTags(&tags)
-	builtinMetrics := metrics.GetBuiltInMetrics(t.ctx)
+	builtinMetrics := t.state.BuiltinMetrics
 	trail.SaveSamples(builtinMetrics, finalTags)
 	if t.responseCallback != nil {
 		trail.Failed.Valid = true
@@ -199,7 +198,7 @@ func (t *transport) measureAndEmitMetrics(unfReq *unfinishedRequest) *finishedRe
 			},
 		)
 	}
-	stats.GetRegistry(t.ctx).PushContainer(t.ctx, trail)
+	stats.PushIfNotDone(t.ctx, t.state.Samples, trail)
 
 	return result
 }

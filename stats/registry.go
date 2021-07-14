@@ -21,7 +21,6 @@
 package stats
 
 import (
-	"context"
 	"fmt"
 	"sync"
 )
@@ -30,15 +29,13 @@ import (
 // TODO maybe rename the whole package to metrics so we have `metrics.Registry` ?
 type Registry struct {
 	metrics map[string]*Metric
-	sink    chan<- SampleContainer
 	l       sync.RWMutex
 	// TODO maybe "seal" it after we no longer want to get new metrics?
 }
 
-func NewRegistry(sink chan<- SampleContainer) *Registry {
+func NewRegistry() *Registry {
 	return &Registry{
 		metrics: make(map[string]*Metric),
-		sink:    sink,
 	}
 }
 
@@ -69,23 +66,3 @@ func (r *Registry) MustNewMetric(name string, typ MetricType, t ...ValueType) *M
 	}
 	return m
 }
-
-// PushContainer emits a contained through the registry's sink
-// TODO drop this somehow
-func (r *Registry) PushContainer(ctx context.Context, container SampleContainer) {
-	PushIfNotDone(ctx, r.sink, container)
-}
-
-func WithRegistry(ctx context.Context, r *Registry) context.Context {
-	return context.WithValue(ctx, registryKey, r)
-}
-
-func GetRegistry(ctx context.Context) *Registry {
-	return ctx.Value(registryKey).(*Registry)
-}
-
-type contextKey uint64
-
-const (
-	registryKey contextKey = iota
-)

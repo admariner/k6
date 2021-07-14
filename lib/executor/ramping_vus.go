@@ -31,6 +31,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 
 	"go.k6.io/k6/lib"
+	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/lib/types"
 	"go.k6.io/k6/stats"
 	"go.k6.io/k6/ui/pb"
@@ -497,7 +498,7 @@ var _ lib.Executor = &RampingVUs{}
 // of a less complex way to implement it (besides the old "increment by 100ms
 // and see what happens)... :/ so maybe see how it can be split?
 // nolint:funlen,gocognit
-func (vlv RampingVUs) Run(parentCtx context.Context, out chan<- stats.SampleContainer) (err error) {
+func (vlv RampingVUs) Run(parentCtx context.Context, out chan<- stats.SampleContainer, builtinMetrics *metrics.BuiltinMetrics) (err error) {
 	rawExecutionSteps := vlv.config.getRawExecutionSteps(vlv.executionState.ExecutionTuple, true)
 	regularDuration, isFinal := lib.GetEndOffset(rawExecutionSteps)
 	if !isFinal {

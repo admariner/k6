@@ -334,10 +334,6 @@ type Sample struct {
 	Value  float64
 }
 
-func (s Sample) Push(ctx context.Context) {
-	PushIfNotDone(ctx, s.Metric.r.sink, s)
-}
-
 // SampleContainer is a simple abstraction that allows sample
 // producers to attach extra information to samples they return
 type SampleContainer interface {

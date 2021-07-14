@@ -118,7 +118,9 @@ a commandline interface for interacting with it.`,
 				return err
 			}
 
-			initRunner, err := newRunner(logger, src, runType, filesystems, runtimeOptions)
+			registry := stats.NewRegistry()
+			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
+			initRunner, err := newRunner(logger, src, runType, filesystems, runtimeOptions, builtinMetrics, registry)
 			if err != nil {
 				return err
 			}
@@ -156,6 +158,10 @@ a commandline interface for interacting with it.`,
 			//    can start winding down its metrics processing.
 			globalCtx, globalCancel := context.WithCancel(ctx)
 			defer globalCancel()
+			lingerCtx, lingerCancel := context.WithCancel(globalCtx)
+			defer lingerCancel()
+			runCtx, runCancel := context.WithCancel(lingerCtx)
+			defer runCancel()
 
 			// Create a local execution scheduler wrapping the runner.
 			logger.Debug("Initializing the execution scheduler...")
@@ -191,20 +197,10 @@ a commandline interface for interacting with it.`,
 
 			// Create the engine.
 			initBar.Modify(pb.WithConstProgress(0, "Init engine"))
-			engine, err := core.NewEngine(execScheduler, conf.Options, runtimeOptions, outputs, logger)
+			engine, err := core.NewEngine(execScheduler, conf.Options, runtimeOptions, outputs, logger, builtinMetrics)
 			if err != nil {
 				return err
 			}
-
-			registry := stats.NewRegistry(engine.Samples)
-			builtInMetrics := metrics.RegisterBuiltinMetrics(registry)
-			globalCtx = stats.WithRegistry(globalCtx, registry)
-			globalCtx = metrics.WithBuiltinMetrics(globalCtx, builtInMetrics)
-
-			lingerCtx, lingerCancel := context.WithCancel(globalCtx)
-			defer lingerCancel()
-			runCtx, runCancel := context.WithCancel(lingerCtx)
-			defer runCancel()
 
 			// Spin up the REST API server, if not disabled.
 			if address != "" {
@@ -225,11 +221,11 @@ a commandline interface for interacting with it.`,
 
 			// We do this here so we can get any output URLs below.
 			initBar.Modify(pb.WithConstProgress(0, "Starting outputs"))
-			err = StartOutputs(logger, outputs, engine, builtInMetrics)
+			err = engine.StartOutputs()
 			if err != nil {
 				return err
 			}
-			defer StopOutputs(logger, outputs)
+			defer engine.StopOutputs()
 
 			printExecutionDescription(
 				"local", filename, "", conf, execScheduler.GetState().ExecutionTuple,
@@ -395,12 +391,13 @@ func runCmdFlagSet() *pflag.FlagSet {
 // Creates a new runner.
 func newRunner(
 	logger *logrus.Logger, src *loader.SourceData, typ string, filesystems map[string]afero.Fs, rtOpts lib.RuntimeOptions,
+	builtinMetrics *metrics.BuiltinMetrics, registry *stats.Registry,
 ) (runner lib.Runner, err error) {
 	switch typ {
 	case "":
-		runner, err = newRunner(logger, src, detectType(src.Data), filesystems, rtOpts)
+		runner, err = newRunner(logger, src, detectType(src.Data), filesystems, rtOpts, builtinMetrics, registry)
 	case typeJS:
-		runner, err = js.New(logger, src, filesystems, rtOpts)
+		runner, err = js.New(logger, src, filesystems, rtOpts, builtinMetrics, registry)
 	case typeArchive:
 		var arc *lib.Archive
 		arc, err = lib.ReadArchive(bytes.NewReader(src.Data))
@@ -409,7 +406,7 @@ func newRunner(
 		}
 		switch arc.Type {
 		case typeJS:
-			runner, err = js.NewFromArchive(logger, arc, rtOpts)
+			runner, err = js.NewFromArchive(logger, arc, rtOpts, builtinMetrics, registry)
 		default:
 			return nil, fmt.Errorf("archive requests unsupported runner: %s", arc.Type)
 		}

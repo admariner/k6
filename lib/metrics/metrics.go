@@ -21,8 +21,6 @@
 package metrics
 
 import (
-	"context"
-
 	"go.k6.io/k6/stats"
 )
 
@@ -134,20 +132,3 @@ func RegisterBuiltinMetrics(registry *stats.Registry) *BuiltinMetrics {
 		DataReceived: registry.MustNewMetric(DataReceivedName, stats.Counter, stats.Data),
 	}
 }
-
-func WithBuiltinMetrics(ctx context.Context, b *BuiltinMetrics) context.Context {
-	return context.WithValue(ctx, builtinMetricsKey, b)
-}
-
-func GetBuiltInMetrics(ctx context.Context) *BuiltinMetrics {
-	if v := ctx.Value(builtinMetricsKey); v != nil {
-		return v.(*BuiltinMetrics)
-	}
-	return nil
-}
-
-type contextKey uint64
-
-const (
-	builtinMetricsKey contextKey = iota
-)
