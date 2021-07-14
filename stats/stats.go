@@ -457,13 +457,13 @@ type Metric struct {
 	r          *Registry    // TODO probably better to no be done like that
 }
 
-func (m *Metric) Emit(ctx context.Context, t time.Time, tags *SampleTags, value float64) {
-	Sample{
+func (m *Metric) Emit(t time.Time, tags *SampleTags, value float64) Sample {
+	return Sample{
 		Time:   t,
 		Tags:   tags,
 		Value:  value,
 		Metric: m,
-	}.Push(ctx)
+	}
 }
 
 func New(name string, typ MetricType, t ...ValueType) *Metric {
