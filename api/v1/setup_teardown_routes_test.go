@@ -137,14 +137,19 @@ func TestSetupData(t *testing.T) {
 	}
 	logger := logrus.New()
 	logger.SetOutput(testutils.NewTestOutput(t))
+	registry := stats.NewRegistry()
+	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	for _, testCase := range testCases {
 		testCase := testCase
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			runner, err := js.New(
 				logger,
 				&loader.SourceData{URL: &url.URL{Path: "/script.js"}, Data: testCase.script},
 				nil,
 				lib.RuntimeOptions{},
+				builtinMetrics,
+				registry,
 			)
 			require.NoError(t, err)
 			runner.SetOptions(lib.Options{
@@ -157,15 +162,10 @@ func TestSetupData(t *testing.T) {
 			})
 			execScheduler, err := local.NewExecutionScheduler(runner, logger)
 			require.NoError(t, err)
-			engine, err := core.NewEngine(execScheduler, runner.GetOptions(), lib.RuntimeOptions{}, nil, logger)
+			engine, err := core.NewEngine(execScheduler, runner.GetOptions(), lib.RuntimeOptions{}, nil, logger, builtinMetrics)
 			require.NoError(t, err)
 
 			globalCtx, globalCancel := context.WithCancel(context.Background())
-			r := stats.NewRegistry(nil)
-			b := metrics.RegisterBuiltinMetrics(r)
-			globalCtx = metrics.WithBuiltinMetrics(globalCtx, b)
-			globalCtx = stats.WithRegistry(globalCtx, r)
-
 			runCtx, runCancel := context.WithCancel(globalCtx)
 			run, wait, err := engine.Init(globalCtx, runCtx)
 			defer wait()
