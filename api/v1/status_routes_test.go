@@ -41,7 +41,6 @@ import (
 	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/lib/testutils"
 	"go.k6.io/k6/lib/testutils/minirunner"
-	"go.k6.io/k6/stats"
 )
 
 func TestGetStatus(t *testing.T) {
@@ -49,7 +48,7 @@ func TestGetStatus(t *testing.T) {
 	logger.SetOutput(testutils.NewTestOutput(t))
 	execScheduler, err := local.NewExecutionScheduler(&minirunner.MiniRunner{}, logger)
 	require.NoError(t, err)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	engine, err := core.NewEngine(execScheduler, lib.Options{}, lib.RuntimeOptions{}, nil, logger, builtinMetrics)
 	require.NoError(t, err)
@@ -100,7 +99,7 @@ func TestPatchStatus(t *testing.T) {
 			"vus": 0, "maxVUs": 10, "duration": "1s"}}`), &scenarios)
 	require.NoError(t, err)
 	options := lib.Options{Scenarios: scenarios}
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 
 	for name, indata := range testdata {

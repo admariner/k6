@@ -90,7 +90,7 @@ func getSimpleRunner(tb testing.TB, filename, data string, opts ...interface{}) 
 			logger = opt
 		}
 	}
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	return New(
 		logger,

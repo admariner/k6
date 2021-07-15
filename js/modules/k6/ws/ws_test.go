@@ -112,7 +112,7 @@ func TestSession(t *testing.T) {
 		},
 		Samples:        samples,
 		TLSConfig:      tb.TLSClientConfig,
-		BuiltinMetrics: metrics.RegisterBuiltinMetrics(stats.NewRegistry()),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(metrics.NewRegistry()),
 	}
 
 	ctx := context.Background()
@@ -371,7 +371,7 @@ func TestSocketSendBinary(t *testing.T) { //nolint: tparallel
 		},
 		Samples:        samples,
 		TLSConfig:      tb.TLSClientConfig,
-		BuiltinMetrics: metrics.RegisterBuiltinMetrics(stats.NewRegistry()),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(metrics.NewRegistry()),
 	}
 
 	ctx := context.Background()
@@ -461,7 +461,7 @@ func TestErrors(t *testing.T) {
 			SystemTags: &stats.DefaultSystemTagSet,
 		},
 		Samples:        samples,
-		BuiltinMetrics: metrics.RegisterBuiltinMetrics(stats.NewRegistry()),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(metrics.NewRegistry()),
 	}
 
 	ctx := context.Background()
@@ -573,7 +573,7 @@ func TestSystemTags(t *testing.T) {
 		Options:        lib.Options{SystemTags: stats.ToSystemTagSet(testedSystemTags)},
 		Samples:        samples,
 		TLSConfig:      tb.TLSClientConfig,
-		BuiltinMetrics: metrics.RegisterBuiltinMetrics(stats.NewRegistry()),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(metrics.NewRegistry()),
 	}
 
 	ctx := context.Background()
@@ -636,7 +636,7 @@ func TestTLSConfig(t *testing.T) {
 			),
 		},
 		Samples:        samples,
-		BuiltinMetrics: metrics.RegisterBuiltinMetrics(stats.NewRegistry()),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(metrics.NewRegistry()),
 	}
 
 	ctx := context.Background()

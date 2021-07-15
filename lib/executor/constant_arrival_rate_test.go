@@ -81,7 +81,7 @@ func TestConstantArrivalRateRunNotEnoughAllocatedVUsWarn(t *testing.T) {
 	)
 	defer cancel()
 	engineOut := make(chan stats.SampleContainer, 1000)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 
 	err = executor.Run(ctx, engineOut, builtinMetrics)
@@ -124,7 +124,7 @@ func TestConstantArrivalRateRunCorrectRate(t *testing.T) {
 		}
 	}()
 	engineOut := make(chan stats.SampleContainer, 1000)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	err = executor.Run(ctx, engineOut, builtinMetrics)
 	wg.Wait()
@@ -187,7 +187,7 @@ func TestConstantArrivalRateRunCorrectTiming(t *testing.T) {
 			steps:    []int64{60, 60, 60, 60, 60, 100},
 		},
 	}
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	for _, test := range tests {
 		test := test
@@ -261,7 +261,7 @@ func TestArrivalRateCancel(t *testing.T) {
 		"constant": getTestConstantArrivalRateConfig(),
 		"ramping":  getTestRampingArrivalRateConfig(),
 	}
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	for name, config := range testCases {
 		config := config
@@ -337,7 +337,7 @@ func TestConstantArrivalRateDroppedIterations(t *testing.T) {
 	)
 	defer cancel()
 	engineOut := make(chan stats.SampleContainer, 1000)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	err = executor.Run(ctx, engineOut, builtinMetrics)
 	require.NoError(t, err)
@@ -369,7 +369,7 @@ func TestConstantArrivalRateGlobalIters(t *testing.T) {
 		{"0,1/4,3/4,1", "3/4:1", []uint64{3, 8, 13, 18}},
 	}
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	for _, tc := range testCases {
 		tc := tc

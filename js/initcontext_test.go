@@ -387,7 +387,7 @@ func TestRequestWithBinaryFile(t *testing.T) {
 	logger.Level = logrus.DebugLevel
 	logger.Out = ioutil.Discard
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	state := &lib.State{
 		Options: lib.Options{},
@@ -534,7 +534,7 @@ func TestRequestWithMultipleBinaryFiles(t *testing.T) {
 	logger.Level = logrus.DebugLevel
 	logger.Out = ioutil.Discard
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	state := &lib.State{
 		Options: lib.Options{},

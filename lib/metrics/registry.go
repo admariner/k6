@@ -18,38 +18,37 @@
  *
  */
 
-package stats
+package metrics
 
 import (
 	"fmt"
 	"sync"
+
+	"go.k6.io/k6/stats"
 )
 
 // Registry is what can create metrics
-// TODO maybe rename the whole package to metrics so we have `metrics.Registry` ?
 type Registry struct {
-	metrics map[string]*Metric
+	metrics map[string]*stats.Metric
 	l       sync.RWMutex
-	// TODO maybe "seal" it after we no longer want to get new metrics?
 }
 
 // NewRegistry returns a new registry
 func NewRegistry() *Registry {
 	return &Registry{
-		metrics: make(map[string]*Metric),
+		metrics: make(map[string]*stats.Metric),
 	}
 }
 
 // NewMetric returns new metric registered to this registry
 // TODO have multiple versions returning specific metric types when we have such things
-func (r *Registry) NewMetric(name string, typ MetricType, t ...ValueType) (*Metric, error) {
+func (r *Registry) NewMetric(name string, typ stats.MetricType, t ...stats.ValueType) (*stats.Metric, error) {
 	r.l.Lock()
 	defer r.l.Unlock()
 	oldMetric, ok := r.metrics[name]
 
 	if !ok {
-		m := New(name, typ, t...)
-		m.r = r
+		m := stats.New(name, typ, t...)
 		r.metrics[name] = m
 		return m, nil
 	}
@@ -57,11 +56,17 @@ func (r *Registry) NewMetric(name string, typ MetricType, t ...ValueType) (*Metr
 	if oldMetric.Type != typ {
 		return nil, fmt.Errorf("metric `%s` already exist but with type %s, instead of %s", name, oldMetric.Type, typ)
 	}
+	if len(t) > 0 {
+		if t[0] != oldMetric.Contains {
+			return nil, fmt.Errorf("metric `%s` already exist but with a value type %s, instead of %s",
+				name, oldMetric.Contains, t[0])
+		}
+	}
 	return oldMetric, nil
 }
 
 // MustNewMetric is like NewMetric, but will panic if there is an error
-func (r *Registry) MustNewMetric(name string, typ MetricType, t ...ValueType) *Metric {
+func (r *Registry) MustNewMetric(name string, typ stats.MetricType, t ...stats.ValueType) *stats.Metric {
 	m, err := r.NewMetric(name, typ, t...)
 	if err != nil {
 		panic(err)

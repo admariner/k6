@@ -107,7 +107,7 @@ func TestLoadOnceGlobalVars(t *testing.T) {
 			require.NoError(t, err)
 
 			arc := r1.MakeArchive()
-			registry := stats.NewRegistry()
+			registry := metrics.NewRegistry()
 			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 			r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 			require.NoError(t, err)
@@ -160,7 +160,7 @@ func TestLoadExportsIsUsableInModule(t *testing.T) {
 	require.NoError(t, err)
 
 	arc := r1.MakeArchive()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)
@@ -210,7 +210,7 @@ func TestLoadDoesntBreakHTTPGet(t *testing.T) {
 
 	require.NoError(t, r1.SetOptions(lib.Options{Hosts: tb.Dialer.Hosts}))
 	arc := r1.MakeArchive()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)
@@ -258,7 +258,7 @@ func TestLoadGlobalVarsAreNotSharedBetweenVUs(t *testing.T) {
 	require.NoError(t, err)
 
 	arc := r1.MakeArchive()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)
@@ -325,7 +325,7 @@ func TestLoadCycle(t *testing.T) {
 	require.NoError(t, err)
 
 	arc := r1.MakeArchive()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)
@@ -390,7 +390,7 @@ func TestLoadCycleBinding(t *testing.T) {
 	require.NoError(t, err)
 
 	arc := r1.MakeArchive()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)
@@ -458,7 +458,7 @@ func TestBrowserified(t *testing.T) {
 	require.NoError(t, err)
 
 	arc := r1.MakeArchive()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)
@@ -504,7 +504,7 @@ func TestLoadingUnexistingModuleDoesntPanic(t *testing.T) {
 	require.NoError(t, arc.Write(buf))
 	arc, err = lib.ReadArchive(buf)
 	require.NoError(t, err)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)
@@ -541,7 +541,7 @@ func TestLoadingSourceMapsDoesntErrorOut(t *testing.T) {
 	require.NoError(t, arc.Write(buf))
 	arc, err = lib.ReadArchive(buf)
 	require.NoError(t, err)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(testutils.NewLogger(t), arc, lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)

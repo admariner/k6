@@ -35,7 +35,6 @@ import (
 	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/lib/testutils"
 	"go.k6.io/k6/loader"
-	"go.k6.io/k6/stats"
 )
 
 type runtimeOptionsTestCase struct {
@@ -321,7 +320,7 @@ func testRuntimeOptionsCase(t *testing.T, tc runtimeOptionsTestCase) {
 
 	fs := afero.NewMemMapFs()
 	require.NoError(t, afero.WriteFile(fs, "/script.js", jsCode.Bytes(), 0o644))
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := newRunner(
 		testutils.NewLogger(t),

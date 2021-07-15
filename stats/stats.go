@@ -450,7 +450,6 @@ type Metric struct {
 	Submetrics []*Submetric `json:"submetrics"`
 	Sub        Submetric    `json:"sub,omitempty"`
 	Sink       Sink         `json:"-"`
-	r          *Registry    // TODO probably better to no be done like that
 }
 
 // Emit creates a new sample of the metric with the provide time, tags and value

@@ -30,7 +30,6 @@ import (
 
 	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/loader"
-	"go.k6.io/k6/stats"
 )
 
 var archiveOut = "archive.tar"
@@ -68,7 +67,7 @@ An archive is a fully self-contained test run, and can be executed identically e
 				return err
 			}
 
-			registry := stats.NewRegistry()
+			registry := metrics.NewRegistry()
 			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 			r, err := newRunner(logger, src, runType, filesystems, runtimeOptions, builtinMetrics, registry)
 			if err != nil {

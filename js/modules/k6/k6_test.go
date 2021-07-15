@@ -127,7 +127,7 @@ func TestGroup(t *testing.T) {
 		ctx := context.Background()
 		ctx = lib.WithState(ctx, state)
 		ctx = common.WithRuntime(ctx, rt)
-		state.BuiltinMetrics = metrics.RegisterBuiltinMetrics(stats.NewRegistry())
+		state.BuiltinMetrics = metrics.RegisterBuiltinMetrics(metrics.NewRegistry())
 		require.NoError(t, rt.Set("k6", common.Bind(rt, New(), &ctx)))
 		return rt, state, root
 	}
@@ -175,7 +175,7 @@ func checkTestRuntime(t testing.TB, ctxs ...*context.Context) (
 	}
 	ctx = common.WithRuntime(ctx, rt)
 	ctx = lib.WithState(ctx, state)
-	state.BuiltinMetrics = metrics.RegisterBuiltinMetrics(stats.NewRegistry())
+	state.BuiltinMetrics = metrics.RegisterBuiltinMetrics(metrics.NewRegistry())
 	require.NoError(t, rt.Set("k6", common.Bind(rt, New(), &ctx)))
 	if len(ctxs) == 1 { // hacks
 		*ctxs[0] = ctx

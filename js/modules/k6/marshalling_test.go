@@ -117,7 +117,7 @@ func TestSetupDataMarshalling(t *testing.T) {
 		}
 	`))
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(
 		testutils.NewLogger(t),

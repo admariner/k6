@@ -83,7 +83,7 @@ func TestNewJSRunnerWithCustomModule(t *testing.T) {
 
 	logger := testutils.NewLogger(t)
 	rtOptions := lib.RuntimeOptions{CompatibilityMode: null.StringFrom("base")}
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(
 		logger,

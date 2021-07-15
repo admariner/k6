@@ -52,7 +52,6 @@ import (
 	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/loader"
 	"go.k6.io/k6/output"
-	"go.k6.io/k6/stats"
 	"go.k6.io/k6/ui/pb"
 )
 
@@ -118,7 +117,7 @@ a commandline interface for interacting with it.`,
 				return err
 			}
 
-			registry := stats.NewRegistry()
+			registry := metrics.NewRegistry()
 			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 			initRunner, err := newRunner(logger, src, runType, filesystems, runtimeOptions, builtinMetrics, registry)
 			if err != nil {
@@ -391,7 +390,7 @@ func runCmdFlagSet() *pflag.FlagSet {
 // Creates a new runner.
 func newRunner(
 	logger *logrus.Logger, src *loader.SourceData, typ string, filesystems map[string]afero.Fs, rtOpts lib.RuntimeOptions,
-	builtinMetrics *metrics.BuiltinMetrics, registry *stats.Registry,
+	builtinMetrics *metrics.BuiltinMetrics, registry *metrics.Registry,
 ) (runner lib.Runner, err error) {
 	switch typ {
 	case "":

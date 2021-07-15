@@ -92,7 +92,7 @@ func TestClient(t *testing.T) {
 			),
 			UserAgent: null.StringFrom("k6-test"),
 		},
-		BuiltinMetrics: metrics.RegisterBuiltinMetrics(stats.NewRegistry()),
+		BuiltinMetrics: metrics.RegisterBuiltinMetrics(metrics.NewRegistry()),
 	}
 
 	cwd, err := os.Getwd()

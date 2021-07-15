@@ -83,7 +83,7 @@ exports.default = function() {
 	assert.Equal(t, logrus.InfoLevel, entries[0].Level)
 	assert.Equal(t, "once", entries[0].Message)
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r2, err := NewFromArchive(logger, r1.MakeArchive(), lib.RuntimeOptions{}, builtinMetrics, registry)
 	require.NoError(t, err)

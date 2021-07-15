@@ -32,7 +32,6 @@ import (
 	"go.k6.io/k6/lib/metrics"
 	"go.k6.io/k6/lib/testutils"
 	"go.k6.io/k6/loader"
-	"go.k6.io/k6/stats"
 )
 
 func TestBuildK6Headers(t *testing.T) {
@@ -60,7 +59,7 @@ func TestBuildK6RequestObject(t *testing.T) {
 	}
 	v, err := buildK6RequestObject(req)
 	assert.NoError(t, err)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	_, err = js.New(testutils.NewLogger(t), &loader.SourceData{
 		URL:  &url.URL{Path: "/script.js"},

@@ -79,7 +79,7 @@ func newTestEngine( //nolint:golint
 	execScheduler, err := local.NewExecutionScheduler(runner, logger)
 	require.NoError(t, err)
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	engine, err = NewEngine(execScheduler, opts, lib.RuntimeOptions{}, outputs, logger, builtinMetrics)
 	require.NoError(t, err)
@@ -467,7 +467,7 @@ func TestSentReceivedMetrics(t *testing.T) {
 	}
 
 	runTest := func(t *testing.T, ts testScript, tc testCase, noConnReuse bool) (float64, float64) {
-		registry := stats.NewRegistry()
+		registry := metrics.NewRegistry()
 		builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 		r, err := js.New(
 			testutils.NewLogger(t),
@@ -605,7 +605,7 @@ func TestRunTags(t *testing.T) {
 		}
 	`))
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	r, err := js.New(
 		testutils.NewLogger(t),
@@ -700,7 +700,7 @@ func TestSetupTeardownThresholds(t *testing.T) {
 		};
 	`))
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(
 		testutils.NewLogger(t),
@@ -753,7 +753,7 @@ func TestSetupException(t *testing.T) {
 		        throw new Error("baz");
 			}
 	`), 0x666))
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(
 		testutils.NewLogger(t),
@@ -806,7 +806,7 @@ func TestVuInitException(t *testing.T) {
 	`)
 
 	logger := testutils.NewLogger(t)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(
 		logger,
@@ -877,7 +877,7 @@ func TestEmittedMetricsWhenScalingDown(t *testing.T) {
 		};
 	`))
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(
 		testutils.NewLogger(t),
@@ -965,7 +965,7 @@ func TestMetricsEmission(t *testing.T) {
 			if !isWindows {
 				t.Parallel()
 			}
-			registry := stats.NewRegistry()
+			registry := metrics.NewRegistry()
 			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 			runner, err := js.New(
 				testutils.NewLogger(t),
@@ -1077,7 +1077,7 @@ func TestMinIterationDurationInSetupTeardownStage(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			registry := stats.NewRegistry()
+			registry := metrics.NewRegistry()
 			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 			runner, err := js.New(
 				testutils.NewLogger(t),
@@ -1191,7 +1191,7 @@ func TestActiveVUsCount(t *testing.T) {
 
 	rtOpts := lib.RuntimeOptions{CompatibilityMode: null.StringFrom("base")}
 
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	runner, err := js.New(logger, &loader.SourceData{URL: &url.URL{Path: "/script.js"}, Data: script}, nil, rtOpts,
 		builtinMetrics, registry)

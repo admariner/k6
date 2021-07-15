@@ -161,7 +161,7 @@ func newRuntime(
 
 	root, err := lib.NewGroup("", nil)
 	require.NoError(t, err)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel

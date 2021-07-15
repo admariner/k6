@@ -99,7 +99,7 @@ type BuiltinMetrics struct {
 }
 
 // RegisterBuiltinMetrics register and returns the builtin metrics in the provided registry
-func RegisterBuiltinMetrics(registry *stats.Registry) *BuiltinMetrics {
+func RegisterBuiltinMetrics(registry *Registry) *BuiltinMetrics {
 	return &BuiltinMetrics{
 		VUs:               registry.MustNewMetric(VUsName, stats.Gauge),
 		VUsMax:            registry.MustNewMetric(VUsMaxName, stats.Gauge),

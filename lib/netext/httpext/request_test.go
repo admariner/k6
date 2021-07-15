@@ -185,7 +185,7 @@ func TestResponseStatus(t *testing.T) {
 				logger := logrus.New()
 				logger.Level = logrus.DebugLevel
 				samples := make(chan<- stats.SampleContainer, 1)
-				registry := stats.NewRegistry()
+				registry := metrics.NewRegistry()
 				state := &lib.State{
 					Options:        lib.Options{RunTags: &stats.SampleTags{}},
 					Transport:      server.Client().Transport,
@@ -261,7 +261,7 @@ func TestMakeRequestTimeoutInTheMiddle(t *testing.T) {
 	samples := make(chan stats.SampleContainer, 10)
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	state := &lib.State{
 		Options: lib.Options{
 			RunTags:    &stats.SampleTags{},
@@ -338,7 +338,7 @@ func TestTrailFailed(t *testing.T) {
 			samples := make(chan stats.SampleContainer, 10)
 			logger := logrus.New()
 			logger.Level = logrus.DebugLevel
-			registry := stats.NewRegistry()
+			registry := metrics.NewRegistry()
 			state := &lib.State{
 				Options: lib.Options{
 					RunTags:    &stats.SampleTags{},
@@ -400,7 +400,7 @@ func TestMakeRequestDialTimeout(t *testing.T) {
 	samples := make(chan stats.SampleContainer, 10)
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	state := &lib.State{
 		Options: lib.Options{
 			RunTags:    &stats.SampleTags{},
@@ -459,7 +459,7 @@ func TestMakeRequestTimeoutInTheBegining(t *testing.T) {
 	samples := make(chan stats.SampleContainer, 10)
 	logger := logrus.New()
 	logger.Level = logrus.DebugLevel
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	state := &lib.State{
 		Options: lib.Options{
 			RunTags:    &stats.SampleTags{},

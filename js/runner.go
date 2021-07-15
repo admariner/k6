@@ -63,7 +63,7 @@ type Runner struct {
 	Logger         *logrus.Logger
 	defaultGroup   *lib.Group
 	builtinMetrics *metrics.BuiltinMetrics
-	registry       *stats.Registry
+	registry       *metrics.Registry
 
 	BaseDialer net.Dialer
 	Resolver   netext.Resolver
@@ -78,7 +78,7 @@ type Runner struct {
 // New returns a new Runner for the provide source
 func New(
 	logger *logrus.Logger, src *loader.SourceData, filesystems map[string]afero.Fs, rtOpts lib.RuntimeOptions,
-	builtinMetrics *metrics.BuiltinMetrics, registry *stats.Registry,
+	builtinMetrics *metrics.BuiltinMetrics, registry *metrics.Registry,
 ) (*Runner, error) {
 	bundle, err := NewBundle(logger, src, filesystems, rtOpts)
 	if err != nil {
@@ -91,7 +91,7 @@ func New(
 // NewFromArchive returns a new Runner from the source in the provided archive
 func NewFromArchive(
 	logger *logrus.Logger, arc *lib.Archive, rtOpts lib.RuntimeOptions,
-	builtinMetrics *metrics.BuiltinMetrics, registry *stats.Registry,
+	builtinMetrics *metrics.BuiltinMetrics, registry *metrics.Registry,
 ) (*Runner, error) {
 	bundle, err := NewBundleFromArchive(logger, arc, rtOpts)
 	if err != nil {
@@ -102,7 +102,7 @@ func NewFromArchive(
 }
 
 func newFromBundle(
-	logger *logrus.Logger, b *Bundle, builtinMetrics *metrics.BuiltinMetrics, registry *stats.Registry,
+	logger *logrus.Logger, b *Bundle, builtinMetrics *metrics.BuiltinMetrics, registry *metrics.Registry,
 ) (*Runner, error) {
 	defaultGroup, err := lib.NewGroup("", nil)
 	if err != nil {

@@ -178,7 +178,7 @@ func runCloudOutputTestCase(t *testing.T, minSamples int) {
 		require.NoError(t, err)
 	}))
 
-	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
+	builtinMetrics := metrics.RegisterBuiltinMetrics(metrics.NewRegistry())
 	out, err := newOutput(output.Params{
 		Logger:     testutils.NewLogger(t),
 		JSONConfig: json.RawMessage(fmt.Sprintf(`{"host": "%s", "noCompress": true}`, tb.ServerHTTP.URL)),
@@ -306,7 +306,7 @@ func runCloudOutputTestCase(t *testing.T, minSamples int) {
 
 func TestCloudOutputMaxPerPacket(t *testing.T) {
 	t.Parallel()
-	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
+	builtinMetrics := metrics.RegisterBuiltinMetrics(metrics.NewRegistry())
 	tb := httpmultibin.NewHTTPMultiBin(t)
 	maxMetricSamplesPerPackage := 20
 	tb.Mux.HandleFunc("/v1/tests", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -401,7 +401,7 @@ func TestCloudOutputStopSendingMetric(t *testing.T) {
 
 func testCloudOutputStopSendingMetric(t *testing.T, stopOnError bool) {
 	tb := httpmultibin.NewHTTPMultiBin(t)
-	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
+	builtinMetrics := metrics.RegisterBuiltinMetrics(metrics.NewRegistry())
 	tb.Mux.HandleFunc("/v1/tests", http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		body, err := ioutil.ReadAll(req.Body)
 		require.NoError(t, err)
@@ -604,7 +604,7 @@ func TestCloudOutputAggregationPeriodZeroNoBlock(t *testing.T) {
 
 func TestCloudOutputPushRefID(t *testing.T) {
 	t.Parallel()
-	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
+	builtinMetrics := metrics.RegisterBuiltinMetrics(metrics.NewRegistry())
 	expSamples := make(chan []Sample)
 	defer close(expSamples)
 
@@ -667,7 +667,7 @@ func TestCloudOutputPushRefID(t *testing.T) {
 
 func TestCloudOutputRecvIterLIAllIterations(t *testing.T) {
 	t.Parallel()
-	builtinMetrics := metrics.RegisterBuiltinMetrics(stats.NewRegistry())
+	builtinMetrics := metrics.RegisterBuiltinMetrics(metrics.NewRegistry())
 	tb := httpmultibin.NewHTTPMultiBin(t)
 	tb.Mux.HandleFunc("/v1/tests", http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		body, err := ioutil.ReadAll(req.Body)

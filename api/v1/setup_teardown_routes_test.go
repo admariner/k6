@@ -44,7 +44,6 @@ import (
 	"go.k6.io/k6/lib/testutils"
 	"go.k6.io/k6/lib/types"
 	"go.k6.io/k6/loader"
-	"go.k6.io/k6/stats"
 )
 
 func TestSetupData(t *testing.T) {
@@ -137,7 +136,7 @@ func TestSetupData(t *testing.T) {
 	}
 	logger := logrus.New()
 	logger.SetOutput(testutils.NewTestOutput(t))
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	for _, testCase := range testCases {
 		testCase := testCase

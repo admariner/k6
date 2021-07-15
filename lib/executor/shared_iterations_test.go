@@ -63,7 +63,7 @@ func TestSharedIterationsRun(t *testing.T) {
 		}),
 	)
 	defer cancel()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	err = executor.Run(ctx, nil, builtinMetrics)
 	require.NoError(t, err)
@@ -100,7 +100,7 @@ func TestSharedIterationsRunVariableVU(t *testing.T) {
 		}),
 	)
 	defer cancel()
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	err = executor.Run(ctx, nil, builtinMetrics)
 	require.NoError(t, err)
@@ -142,7 +142,7 @@ func TestSharedIterationsEmitDroppedIterations(t *testing.T) {
 	)
 	defer cancel()
 	engineOut := make(chan stats.SampleContainer, 1000)
-	registry := stats.NewRegistry()
+	registry := metrics.NewRegistry()
 	builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 	err = executor.Run(ctx, engineOut, builtinMetrics)
 	require.NoError(t, err)
@@ -196,7 +196,7 @@ func TestSharedIterationsGlobalIters(t *testing.T) {
 			}
 
 			engineOut := make(chan stats.SampleContainer, 100)
-			registry := stats.NewRegistry()
+			registry := metrics.NewRegistry()
 			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
 			err = executor.Run(ctx, engineOut, builtinMetrics)
 			require.NoError(t, err)
