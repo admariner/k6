@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	VUsName               = "vus"
+	VUsName               = "vus" //nolint:golint,revive
 	VUsMaxName            = "vus_max"
 	IterationsName        = "iterations"
 	IterationDurationName = "iteration_duration"
@@ -58,6 +58,7 @@ const (
 	DataReceivedName = "data_received"
 )
 
+// BuiltinMetrics represent all the builtin metrics of k6
 type BuiltinMetrics struct {
 	VUs               *stats.Metric
 	VUsMax            *stats.Metric
@@ -97,6 +98,7 @@ type BuiltinMetrics struct {
 	DataReceived *stats.Metric
 }
 
+// RegisterBuiltinMetrics register and returns the builtin metrics in the provided registry
 func RegisterBuiltinMetrics(registry *stats.Registry) *BuiltinMetrics {
 	return &BuiltinMetrics{
 		VUs:               registry.MustNewMetric(VUsName, stats.Gauge),

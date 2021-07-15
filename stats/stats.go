@@ -453,6 +453,7 @@ type Metric struct {
 	r          *Registry    // TODO probably better to no be done like that
 }
 
+// Emit creates a new sample of the metric with the provide time, tags and value
 func (m *Metric) Emit(t time.Time, tags *SampleTags, value float64) Sample {
 	return Sample{
 		Time:   t,

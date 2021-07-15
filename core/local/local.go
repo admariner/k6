@@ -339,7 +339,10 @@ func (e *ExecutionScheduler) runExecutor(
 
 // Run the ExecutionScheduler, funneling all generated metric samples through the supplied
 // out channel.
-func (e *ExecutionScheduler) Run(globalCtx, runCtx context.Context, engineOut chan<- stats.SampleContainer, builtinMetrics *metrics.BuiltinMetrics) error {
+//nolint:cyclop
+func (e *ExecutionScheduler) Run(
+	globalCtx, runCtx context.Context, engineOut chan<- stats.SampleContainer, builtinMetrics *metrics.BuiltinMetrics,
+) error {
 	executorsCount := len(e.executors)
 	logger := e.logger.WithField("phase", "local-execution-scheduler-run")
 	e.initProgress.Modify(pb.WithConstLeft("Run"))

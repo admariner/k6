@@ -33,6 +33,7 @@ type Registry struct {
 	// TODO maybe "seal" it after we no longer want to get new metrics?
 }
 
+// NewRegistry returns a new registry
 func NewRegistry() *Registry {
 	return &Registry{
 		metrics: make(map[string]*Metric),
@@ -54,11 +55,12 @@ func (r *Registry) NewMetric(name string, typ MetricType, t ...ValueType) (*Metr
 	}
 	// Name is checked. TODO check Contains as well
 	if oldMetric.Type != typ {
-		return nil, fmt.Errorf("Metric `%s` already exist but with type %s", name, oldMetric.Type)
+		return nil, fmt.Errorf("metric `%s` already exist but with type %s, instead of %s", name, oldMetric.Type, typ)
 	}
 	return oldMetric, nil
 }
 
+// MustNewMetric is like NewMetric, but will panic if there is an error
 func (r *Registry) MustNewMetric(name string, typ MetricType, t ...ValueType) *Metric {
 	m, err := r.NewMetric(name, typ, t...)
 	if err != nil {

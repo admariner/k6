@@ -152,7 +152,9 @@ var _ lib.Executor = &PerVUIterations{}
 
 // Run executes a specific number of iterations with each configured VU.
 // nolint:funlen
-func (pvi PerVUIterations) Run(parentCtx context.Context, out chan<- stats.SampleContainer, builtinMetrics *metrics.BuiltinMetrics) (err error) {
+func (pvi PerVUIterations) Run(
+	parentCtx context.Context, out chan<- stats.SampleContainer, builtinMetrics *metrics.BuiltinMetrics,
+) (err error) {
 	numVUs := pvi.config.GetVUs(pvi.executionState.ExecutionTuple)
 	iterations := pvi.config.GetIterations()
 	duration := time.Duration(pvi.config.MaxDuration.Duration)

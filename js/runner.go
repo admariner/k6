@@ -101,7 +101,9 @@ func NewFromArchive(
 	return newFromBundle(logger, bundle, builtinMetrics, registry)
 }
 
-func newFromBundle(logger *logrus.Logger, b *Bundle, builtinMetrics *metrics.BuiltinMetrics, registry *stats.Registry) (*Runner, error) {
+func newFromBundle(
+	logger *logrus.Logger, b *Bundle, builtinMetrics *metrics.BuiltinMetrics, registry *stats.Registry,
+) (*Runner, error) {
 	defaultGroup, err := lib.NewGroup("", nil)
 	if err != nil {
 		return nil, err

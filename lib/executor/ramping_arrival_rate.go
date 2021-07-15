@@ -319,8 +319,10 @@ func noNegativeSqrt(f float64) float64 {
 // time should iteration X begin) different, but keep everyhing else the same.
 // This will allow us to implement https://github.com/k6io/k6/issues/1386
 // and things like all of the TODOs below in one place only.
-//nolint:funlen,gocognit
-func (varr RampingArrivalRate) Run(parentCtx context.Context, out chan<- stats.SampleContainer, builtinMetrics *metrics.BuiltinMetrics) (err error) {
+//nolint:funlen,cyclop
+func (varr RampingArrivalRate) Run(
+	parentCtx context.Context, out chan<- stats.SampleContainer, builtinMetrics *metrics.BuiltinMetrics,
+) (err error) {
 	segment := varr.executionState.ExecutionTuple.Segment
 	gracefulStop := varr.config.GetGracefulStop()
 	duration := sumStagesDuration(varr.config.Stages)
