@@ -89,7 +89,7 @@ func (d *Dialer) DialContext(ctx context.Context, proto, addr string) (net.Conn,
 	return conn, err
 }
 
-// GetBytes return the written and read bytes through this dialer and zeros the fields
+// GetBytes returns the written and read bytes through this dialer and zeros the fields.
 func (d *Dialer) GetBytes() (bytesWritten, bytesRead int64) {
 	bytesWritten = atomic.SwapInt64(&d.BytesWritten, 0)
 	bytesRead = atomic.SwapInt64(&d.BytesRead, 0)
