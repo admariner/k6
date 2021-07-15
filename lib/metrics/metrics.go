@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	VUsName               = "vus" //nolint:golint,revive
+	VUsName               = "vus" //nolint:golint
 	VUsMaxName            = "vus_max"
 	IterationsName        = "iterations"
 	IterationDurationName = "iteration_duration"
