@@ -111,8 +111,8 @@ This will execute the test on the k6 cloud service. Use "k6 login cloud" to auth
 
 			modifyAndPrintBar(progressBar, pb.WithConstProgress(0, "Getting script options"))
 			registry := stats.NewRegistry()
-			builtInMetrics := metrics.RegisterBuiltinMetrics(registry)
-			r, err := newRunner(logger, src, runType, filesystems, runtimeOptions, builtInMetrics, registry)
+			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
+			r, err := newRunner(logger, src, runType, filesystems, runtimeOptions, builtinMetrics, registry)
 			if err != nil {
 				return err
 			}

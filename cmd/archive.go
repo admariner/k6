@@ -69,8 +69,8 @@ An archive is a fully self-contained test run, and can be executed identically e
 			}
 
 			registry := stats.NewRegistry()
-			builtInMetrics := metrics.RegisterBuiltinMetrics(registry)
-			r, err := newRunner(logger, src, runType, filesystems, runtimeOptions, builtInMetrics, registry)
+			builtinMetrics := metrics.RegisterBuiltinMetrics(registry)
+			r, err := newRunner(logger, src, runType, filesystems, runtimeOptions, builtinMetrics, registry)
 			if err != nil {
 				return err
 			}
