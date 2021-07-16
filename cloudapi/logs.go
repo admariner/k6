@@ -22,12 +22,10 @@ package cloudapi
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -113,30 +111,37 @@ func (c *Config) getRequest(referenceID string, start time.Duration) (*url.URL, 
 func (c *Config) StreamLogsToLogger(
 	ctx context.Context, logger logrus.FieldLogger, referenceID string, start time.Duration,
 ) error {
-	u, err := c.getRequest(referenceID, start)
-	if err != nil {
-		return err
+	var conn *websocket.Conn
+
+	dial := func() error {
+		u, err := c.getRequest(referenceID, start)
+		if err != nil {
+			return err
+		}
+
+		headers := make(http.Header)
+		headers.Add("Sec-WebSocket-Protocol", "token="+c.Token.String)
+
+		return retry(3, 5*time.Second, func() (err error) {
+			// We don't need to close the http body or use it for anything until we want to actually log
+			// what the server returned as body when it errors out
+			conn, _, err = websocket.DefaultDialer.DialContext(ctx, u.String(), headers) //nolint:bodyclose
+			return err
+		})
 	}
 
-	headers := make(http.Header)
-	headers.Add("Sec-WebSocket-Protocol", "token="+c.Token.String)
-
-	conn, err := dialContext(ctx, dialConfig{
-		url:           u.String(),
-		headers:       headers,
-		retryAttempts: c.LogsTailDialRetryAttempts.Int64,
-		retryInterval: time.Duration(c.LogsTailDialRetryInterval.Duration),
-		refreshAfter:  time.Duration(c.LogsTailRefreshAfter.Duration),
-	})
-	if err != nil {
+	if err := dial(); err != nil {
 		return err
 	}
-	conn.OnRedialing(func() {
-		logger.Info("we are reconnecting to tail logs, this might result in either some repeated or missed messages")
-	})
 
 	go func() {
 		<-ctx.Done()
+
+		_ = conn.WriteControl(
+			websocket.CloseMessage,
+			websocket.FormatCloseMessage(websocket.CloseGoingAway, "closing"),
+			time.Now().Add(time.Second))
+
 		_ = conn.Close()
 	}()
 
@@ -152,12 +157,13 @@ func (c *Config) StreamLogsToLogger(
 
 				continue
 			}
+
 			m.Log(logger)
 		}
 	}()
 
 	for {
-		message, err := conn.ReadMessage(ctx)
+		_, message, err := conn.ReadMessage()
 		select { // check if we should stop before continuing
 		case <-ctx.Done():
 			return nil
@@ -166,6 +172,13 @@ func (c *Config) StreamLogsToLogger(
 
 		if err != nil {
 			logger.WithError(err).Warn("error reading a message from the cloud")
+
+			// try to restore the stream establishing a new connection
+			logger.Warn("trying to establish a fresh connection with the tail logs, this might result in either some repeated or missed messages")
+			if errd := dial(); errd == nil {
+				continue
+			}
+
 			return err
 		}
 
@@ -177,180 +190,13 @@ func (c *Config) StreamLogsToLogger(
 	}
 }
 
-//nolint:lll
-//go:generate mockgen -package cloudapi -destination ./logtail_streamer_mock.go --build_flags=--mod=mod . LogtailStreamer
-
-// LogtailStreamer represents a streaming connection with a logtail service.
-type LogtailStreamer interface {
-	ReadMessage() (msgtype int, msg []byte, err error)
-	WriteControl(msgtype int, msg []byte, deadline time.Time) error
-	Close() error
-}
-
-//nolint:lll
-//go:generate mockgen -package cloudapi -destination ./logtail_dialer_mock.go --build_flags=--mod=mod . LogtailStreamDialer
-
-// LogtailStreamDialer is a streaming connection dialer with a logtail service.
-type LogtailStreamDialer interface {
-	DialContext(ctx context.Context, url string, headers http.Header) (LogtailStreamer, error)
-}
-
-// dialAdapter adapts a gorilla websocket dialer as a LogtailStreamDialer.
-type dialAdapter struct {
-	dialer *websocket.Dialer
-}
-
-func (a dialAdapter) DialContext(ctx context.Context, url string, headers http.Header) (LogtailStreamer, error) {
-	// We don't need to close the http body or use it for anything until we want to actually log
-	// what the server returned as body when it errors out
-	conn, _, err := a.dialer.DialContext(ctx, url, headers) //nolint:bodyclose
-	return conn, err
-}
-
-// dialContext returns an established websocket connection with the logtail stream service.
-func dialContext(ctx context.Context, c dialConfig) (*wsconn, error) {
-	wsc := &wsconn{
-		m:          sync.Mutex{},
-		conn:       nil,
-		dialer:     dialAdapter{dialer: websocket.DefaultDialer},
-		dialConfig: c,
-		afterfn:    time.After,
-		onRedialing: func() {
-		},
-	}
-	if err := wsc.dial(ctx); err != nil {
-		return nil, err
-	}
-	if wsc.dialConfig.refreshAfter > 0 {
-		go wsc.keepAlive(ctx, wsc.dialConfig.refreshAfter)
-	}
-	return wsc, nil
-}
-
-type wsconn struct {
-	m          sync.Mutex
-	conn       LogtailStreamer
-	dialer     LogtailStreamDialer
-	dialConfig dialConfig
-
-	// afterfn abstracts a timer
-	afterfn func(time.Duration) <-chan time.Time
-
-	// onRedialing is a callback invoked
-	// when a connection's refresh attempt is invoked.
-	onRedialing func()
-}
-
-type dialConfig struct {
-	url           string
-	headers       http.Header
-	retryAttempts int64
-	retryInterval time.Duration
-	refreshAfter  time.Duration
-}
-
-// OnRedialing sets a function to invoke
-// when the a new connection refresh is on going.
-func (wsc *wsconn) OnRedialing(f func()) {
-	wsc.onRedialing = f
-}
-
-func (wsc *wsconn) dial(ctx context.Context) error {
-	attempts := uint(1)
-	if wsc.dialConfig.retryAttempts > 0 {
-		attempts = uint(wsc.dialConfig.retryAttempts)
-	}
-	var newc LogtailStreamer
-	err := retry(attempts, wsc.dialConfig.retryInterval, func() (err error) {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			newc, err = wsc.dialer.DialContext(ctx, wsc.dialConfig.url, wsc.dialConfig.headers)
-		}
-		return
-	})
-	if err != nil {
-		return err
-	}
-
-	// if any, close the previous conn
-	if wsc.conn != nil {
-		_ = wsc.Close()
-	}
-	wsc.m.Lock()
-	wsc.conn = newc
-	wsc.m.Unlock()
-	return nil
-}
-
-// keepAlive keeps alive the websocket connection invoking a new dial
-// every interval defined from refreshAfter.
-func (wsc *wsconn) keepAlive(ctx context.Context, refreshAfter time.Duration) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-wsc.afterfn(refreshAfter):
-			wsc.onRedialing()
-			// error skipped to let it fail on reading
-			// or retry a new dial on the next timer firing
-			_ = wsc.dial(ctx)
-		}
-	}
-}
-
-// ReadMessge reads a message from the stream.
-func (wsc *wsconn) ReadMessage(ctx context.Context) ([]byte, error) {
-	readfn := func() (messageType int, p []byte, err error) {
-		wsc.m.Lock()
-		messageType, p, err = wsc.conn.ReadMessage()
-		wsc.m.Unlock()
-		return
-	}
-
-	isErr := func(err error) bool {
-		eclose := &websocket.CloseError{}
-		return err != nil && !errors.As(err, &eclose)
-	}
-
-	_, msg, err := readfn()
-	if isErr(err) {
-		// try to fix getting a fresh connection
-		wsc.onRedialing()
-		dErr := wsc.dial(ctx)
-		if dErr != nil {
-			// return the main error
-			return nil, err
-		}
-		_, msg, err = readfn()
-		if isErr(err) {
-			return nil, err
-		}
-	}
-	return msg, nil
-}
-
-// Close closes the connection.
-func (wsc *wsconn) Close() error {
-	_ = wsc.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseGoingAway, "closing"),
-		time.Now().Add(time.Second))
-
-	wsc.m.Lock()
-	_ = wsc.conn.Close()
-	wsc.m.Unlock()
-	return nil
-}
-
 // retry retries a to exeucute a provided function until it isn't succeeded
 // or maximum number of attempts is hit. It waits the specificed interval
 // between the latest iteration and the next retry.
 func retry(attempts uint, interval time.Duration, do func() error) (err error) {
 	for i := 0; i < int(attempts); i++ {
 		if i > 0 {
-			time.Sleep(interval)
+			time.Sleep(time.Duration(i) * interval)
 		}
 		err = do()
 		if err == nil {
