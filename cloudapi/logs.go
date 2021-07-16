@@ -23,6 +23,8 @@ package cloudapi
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -122,7 +124,7 @@ func (c *Config) StreamLogsToLogger(
 		headers := make(http.Header)
 		headers.Add("Sec-WebSocket-Protocol", "token="+c.Token.String)
 
-		return retry(3, 5*time.Second, func() (err error) {
+		return retry(3, 5*time.Second, 2*time.Minute, func() (err error) {
 			// We don't need to close the http body or use it for anything until we want to actually log
 			// what the server returned as body when it errors out
 			conn, _, err = websocket.DefaultDialer.DialContext(ctx, u.String(), headers) //nolint:bodyclose
@@ -190,13 +192,23 @@ func (c *Config) StreamLogsToLogger(
 	}
 }
 
-// retry retries a to exeucute a provided function until it isn't succeeded
-// or maximum number of attempts is hit. It waits the specificed interval
+// retry retries to execute a provided function until it isn't succeeded
+// or maximum number of attempts is hit. It waits the specified interval
 // between the latest iteration and the next retry.
-func retry(attempts uint, interval time.Duration, do func() error) (err error) {
-	for i := 0; i < int(attempts); i++ {
+// Interval is used as the base to compute an exponential backoff until,
+// If the computed interval overtakes the max interval then max will be used.
+func retry(attempts uint, interval, max time.Duration, do func() error) (err error) {
+	baseInterval := interval.Truncate(time.Second).Seconds()
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+		for i := 0; i < int(attempts); i++ {
 		if i > 0 {
-			time.Sleep(time.Duration(i) * interval)
+			// (interval ^ i) + random milliseconds
+			wait := (time.Duration(math.Pow(baseInterval, float64(i)))*time.Second) + (time.Duration(r.Int63n(1000))*time.Millisecond)
+			if wait > max {
+				wait = max
+			}
+			time.Sleep(wait)
 		}
 		err = do()
 		if err == nil {
