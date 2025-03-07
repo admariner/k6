@@ -1,7 +1,8 @@
 package metrics
 
+//nolint:revive
 const (
-	VUsName               = "vus" //nolint:revive
+	VUsName               = "vus"
 	VUsMaxName            = "vus_max"
 	IterationsName        = "iterations"
 	IterationDurationName = "iteration_duration"
